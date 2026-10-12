@@ -1,0 +1,47 @@
+JAWABAN PERTANYAAN - PBO W5S3 (Polymorphism dan Abstract Class)
+
+Semua jawaban di bawah sudah dicoba langsung dengan JDK 21.
+
+
+BAGIAN 1.1 METHOD OVERLOADING (Mantra.java)
+
+1. Apa yang terjadi jika salah satu method overloading dihapus, misalnya yang dua parameter?
+   Jawab : Kode gagal di-compile pada baris yang memanggilnya. Jika method ucapkan(String, int) dihapus, pemanggilan mantra.ucapkan("Expelliarmus", 5) menghasilkan error "no suitable method found for ucapkan(String,int)". Compiler menjelaskan bahwa method ucapkan(String) dan ucapkan(String,int,String) tidak cocok karena jumlah argumennya berbeda.
+           Penyebabnya, overloading diputuskan saat compile. Compiler mencocokkan jumlah, tipe, dan urutan argumen dengan method yang tersedia. Kalau tidak ada yang cocok, program ditolak sebelum dijalankan.
+2. Bisakah overloading dibuat dengan urutan parameter berbeda, misalnya ucapkan(int kekuatan, String namaMantra)?
+   Jawab : Bisa. Method (int, String) dan (String, int) dianggap berbeda karena urutan tipe parameternya berbeda, jadi sah sebagai overload. Method ini sudah saya tambahkan di Mantra.java dan isinya hanya memanggil ucapkan(String, int) supaya tidak ada kode yang sama ditulis dua kali.
+           Yang tidak bisa dijadikan pembeda overload adalah perbedaan return type saja, atau perbedaan nama parameter saja.
+
+
+BAGIAN 1.2 METHOD OVERRIDING (DemoPenyihir.java)
+1. Apa yang terjadi jika tidak memakai @Override? Apakah kode masih berjalan?
+   Jawab : Kode masih berjalan. Selama nama method dan parameternya sama persis dengan milik superclass, method itu tetap meng-override. @Override hanya penanda untuk compiler agar mengecek apakah method benar-benar meng-override.
+           Gunanya terasa saat terjadi salah ketik. Misalnya subclass menulis ucapkanMantera() (typo). Dengan @Override, compiler langsung error "method does not override or implement a method from a supertype". Tanpa @Override, kode tetap berhasil di-compile tetapi itu menjadi method baru, sehingga saat dipanggil lewat variabel bertipe Penyihir yang jalan tetap versi induknya. Kesalahan seperti ini sulit dicari karena tidak ada pesan error.
+
+2. Apa keuntungan polymorphism dalam contoh ini?
+   Jawab : Satu tipe variabel (Penyihir) bisa dipakai untuk banyak jenis objek (HarryPotter, Hermione, RonWeasley), dan setiap objek menjalankan ucapkanMantra() versinya sendiri. Kode yang memanggilnya tidak perlu diubah saat ada penyihir baru, cukup buat subclass baru. Kita juga tidak perlu if-else atau instanceof untuk memeriksa jenis penyihir, sehingga kode lebih singkat dan lebih mudah dirawat.
+
+
+BAGIAN 2.1 ABSTRACT CLASS (DemoMantraAbstrak.java)
+1. Apa yang terjadi jika membuat objek dari MantraAbstrak langsung?
+   Jawab : Hasilnya compile error: "MantraAbstrak is abstract; cannot be instantiated". Class abstrak punya method efek() yang belum ada isinya, sehingga kalau objeknya boleh dibuat dan efek() dipanggil, tidak ada kode yang bisa dijalankan. Karena itu Java melarangnya. Objek hanya boleh dibuat dari subclass konkret yang sudah mengisi semua method abstrak.
+
+2. Mengapa perlu abstract class dan apa keuntungannya?
+   Jawab : Pertama, abstract class memaksa semua subclass mengisi method yang wajib, jadi kalau ada mantra baru yang lupa menulis efek(), compiler langsung menolak. Kedua, kode yang sama (atribut nama, constructor, method ucapkan) cukup ditulis sekali di induk dan dipakai semua subclass. Ketiga, objek yang tidak masuk akal, yaitu mantra umum tanpa efek, tidak bisa dibuat. Keempat, abstract class menjadi dasar polymorphism, misalnya MantraAbstrak m = new Lumos(). Terakhir, menambah mantra baru cukup dengan membuat satu subclass.
+
+BAGIAN 3.1 KOMBINASI POLYMORPHISM DAN ABSTRACT CLASS (DuniaSihir.java)
+
+1. Bagaimana polymorphism dan abstract class bekerja sama?
+   Jawab : Abstract class Mantra menjadi kontrak: setiap mantra pasti punya getNama() dan efek(). Kelas Penyihir menyimpan daftar bertipe Mantra (abstrak) dan hanya memanggil mantra.efek(). Saat program berjalan, Java melihat objek aslinya (Expelliarmus, Lumos, dan seterusnya) lalu menjalankan efek() milik kelas tersebut. Jadi abstract class menentukan apa yang harus bisa dilakukan sebuah mantra, dan polymorphism menentukan versi mana yang dijalankan.
+
+2. Apa yang terjadi jika menambahkan mantra baru tanpa mengubah kelas Penyihir? Apakah mudah?
+   Jawab : Sangat mudah. Cukup buat class baru yang extends Mantra dan isi efek(), lalu panggil penyihir.belajarMantra(new Alohomora()). Kelas Penyihir tidak diubah sama sekali, dan ini sudah dibuktikan di DuniaSihir.java lewat mantra Alohomora. Hal ini bisa terjadi karena Penyihir hanya bergantung pada tipe abstrak Mantra, bukan pada mantra konkret tertentu. Prinsipnya disebut Open/Closed: terbuka untuk penambahan, tertutup untuk perubahan.
+
+
+TANTANGAN SISTEM PERTAHANAN HOGWARTS
+MantraPerlindungan adalah abstract class dengan method abstrak aktifkan() dan nonaktifkan(), serta nama dan status aktif yang dipakai bersama.
+Protego, saat diaktifkan, mencetak "Perisai Protego terbentuk!".
+Fidelius membutuhkan objek Penyihir sebagai Secret Keeper. Kalau belum ada Secret Keeper, aktivasinya gagal dan mencetak pesan kegagalan. Setelah Secret Keeper ditentukan lewat setSecretKeeper(), aktivasinya berhasil.
+MantraAntiApparition mencegah apparition di area tertentu. Method cobaApparition() dipakai untuk mensimulasikan hasilnya saat mantra aktif maupun tidak aktif.
+SistemPertahanan menyimpan daftar MantraPerlindungan dan punya method tambahMantra(), aktifkanSemuaMantra(), dan nonaktifkanSemuaMantra(), ditambah tampilkanStatus() untuk memeriksa status. Kelas ini hanya mengenal tipe abstrak, jadi mantra perlindungan baru bisa ditambahkan tanpa mengubahnya.
+DemoHogwarts adalah program utama yang membuat tiga mantra, memasukkannya ke sistem, lalu mengaktifkan dan menonaktifkannya.
